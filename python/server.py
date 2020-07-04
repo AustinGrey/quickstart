@@ -37,11 +37,11 @@ PLAID_COUNTRY_CODES = os.getenv('PLAID_COUNTRY_CODES', 'US')
 # that the bank website should redirect to. You will need to whitelist
 # this redirect URI for your client ID through the Plaid developer dashboard
 # at https://dashboard.plaid.com/team/api.
-PLAID_OAUTH_REDIRECT_URI = os.getenv('PLAID_OAUTH_REDIRECT_URI', '');
+PLAID_OAUTH_REDIRECT_URI = os.getenv('PLAID_OAUTH_REDIRECT_URI', '')
 # Set PLAID_OAUTH_NONCE to a unique identifier such as a UUID for each Link
 # session. The nonce will be used to re-open Link upon completion of the OAuth
 # redirect. The nonce must be at least 16 characters long.
-PLAID_OAUTH_NONCE = os.getenv('PLAID_OAUTH_NONCE', '');
+PLAID_OAUTH_NONCE = os.getenv('PLAID_OAUTH_NONCE', '')
 
 client = plaid.Client(client_id = PLAID_CLIENT_ID, secret=PLAID_SECRET,
                       public_key=PLAID_PUBLIC_KEY, environment=PLAID_ENV, api_version='2019-05-29')
@@ -94,6 +94,16 @@ def get_access_token():
   pretty_print_response(exchange_response)
   access_token = exchange_response['access_token']
   return jsonify(exchange_response)
+
+@app.route('/get_public_token', methods=['POST'])
+def get_public_token():
+  a_token = request.form['accessToken']
+  try:
+    create_response = client.Item.public_token.create(a_token)
+  except plaid.errors.PlaidError as e:
+    return jsonify(format_error(e))
+  pretty_print_response(create_response)
+  return jsonify(create_response)
 
 # Retrieve ACH or ETF account numbers for an Item
 # https://plaid.com/docs/#auth
